@@ -1,0 +1,12 @@
+name: ME2063
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - numpy
+  - scipy
+  - scikit-learn
+  - pandas
+  - matplotlib
+  - seaborn
+  - ipykernel
