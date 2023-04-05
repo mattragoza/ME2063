@@ -2,7 +2,7 @@ clc
 close all
 clear all
 
-rng('default')
+%rng('default')
 LW = 'LineWidth';
 set(0,'defaulttextinterpreter','latex')
 R     = [216, 82,  24 ]/255;
@@ -62,7 +62,7 @@ model.xstar_size= [N1 N2];
 model.ystar_t = T;
 
 %% ----------- Check gradients -----------
-x0 = randn(D, 7);
+x0 = randn(1, m);
 my_func(x0);
 options = optimoptions('fminunc','GradObj','on','Display','iter',...
     'Algorithm','trust-region','Diagnostics','on','MaxIterations',2000,'FunctionTolerance',1e-8,'DerivativeCheck','on');
@@ -73,10 +73,8 @@ here
 model.xm = [L*rand(model.Nm,1) L*rand(model.Nm,1)]';
 
 w = randn(model.np,1);
-[l,g]=loss(w);
+[l,g]=my_loss(w);
 
 options = optimoptions('fminunc','GradObj','on','Display','iter',...
-    'Algorithm','trust-region','Diagnostics','on','MaxIterations',2000,'FunctionTolerance',1e-8)%,'DerivativeCheck','on');
-model.w = fminunc(@loss,w,options);
-
-
+    'Algorithm','trust-region','Diagnostics','on','MaxIterations',2000,'FunctionTolerance',1e-8,'DerivativeCheck','off');
+model.w = fminunc(@my_loss,w,options);
