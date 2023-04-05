@@ -16,8 +16,12 @@ size(b2); % i1
 a1  = W1*x+b1; % jk,kl -> jl
 z1p = hp(a1);  % jl
 
+D = size(x, 1);
+N = size(x, 2);
 d = zeros(size(x)); % kl
-for j=1:length(b1)
-    % ij,jl,jk -> kl
-    d = d + W2(:,j).*z1p(j,:).*W1(j,:)';
+for k=1:D
+    for l=1:N
+        % ij,jl,jk -> kl
+        d(k,l) = sum(W2'.*z1p(:,l).*W1(:,k));
+    end
 end
