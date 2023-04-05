@@ -1,8 +1,7 @@
 function [loss,G]=loss(w)
 B = [0 113 188 ]/norm([0 113 188 ]);
 global model counter
-x = model.x;
-y = model.y;
+
 for i=1:length(model.layers)-1
     m = model.layer(i).iw;
     n = model.layer(i).ws;
@@ -14,9 +13,23 @@ for i=1:length(model.layers)-1
     
     model.layer(i).b = reshape(w(m(1):m(2)),n(1),n(2));
 end
-N  = model.Nd;
-loss = model.flagd*sum((forward_pass(x)-y).^2)/(2*N);
+
+loss = 0;
+if model.flagd > 0
+    y_pred = forward_pass(model.x);
+    lossd = sum((y_pred - model.y).^2)/(2*model.Nd);
+    loss = loss + model.flagd * lossd;
+end
+
+if model.flagm > 0
+    L = D2y(model.xm); % Laplacian
+    pde_res = model.k * L + q(model.xm')';
+    lossm = sum(pde_res.^2, "all")/(2*model.Nm);
+    loss = loss + model.flagm * lossm;
+end
+
 G = Gradloss;
+
 counter = counter + 1;
 if (mod(counter,100)==0)
     N = model.xstar_size;

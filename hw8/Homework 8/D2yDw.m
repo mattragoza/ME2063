@@ -30,7 +30,7 @@ G_W2 = zeros(m, N); % jl
 for j=1:m
     for l=1:N
         % jl,jk -> jl
-        G_W2(j,l) = sum(z1pp(j,l).*W12(j,:));
+        G_W2(j,l) = sum(z1pp(j,l).*W12(j,:), "all");
     end
 end
 
@@ -38,8 +38,8 @@ end
 G_b1 = zeros(m, N); % jl
 for j=1:m
     for l=1:N
-        % jl,jk -> jl
-        G_b1(j,l) = sum(W2(:,j).*z1p3(j,l).*W12(j,:));
+        % ij,jl,jk -> jl
+        G_b1(j,l) = sum(W2(:,j).*z1p3(j,l).*W12(j,:), "all");
     end
 end
 
@@ -49,14 +49,14 @@ for k=1:D
     G_W1_k = zeros(m, N); % jl
     for j=1:m
         for l=1:N
-
             % jl,jk->kjl
-            term1 = sum(2*W2(:,j).*z1pp(j,l).*W1(j,k), "all");
-            
-            % jl,jk,kl->kjl
-            term2 = sum(W2(:,j).*z1p3(j,l).*W12(j,:).*model.x(k,l), "all");
+            term1 = sum(2*z1pp(j,l).*W1(j,k), "all");
 
-            G_W1_k(j,l) = term1 + term2;
+            % jl,jk,kl->kjl
+            term2 = sum(z1p3(j,l).*W12(j,:).*model.x(k,l), "all");
+            
+            % ij,kjl->kjl
+            G_W1_k(j,l) = W2(:,j).*(term1 + term2);
         end
     end
     G_W1 = [G_W1; G_W1_k]; % stack vertically

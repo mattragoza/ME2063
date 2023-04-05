@@ -47,8 +47,8 @@ W12  = W1.*W1;  % jk
 %grad = zeros(m, N); % jl
 %for j=1:m
 %    for l=1:N
-%        % jl,jk,jk->jl
-%        grad(j,l) = sum(z1pp(j,l).*W12(j,:));
+%        % jl,jk->jl
+%        grad(j,l) = sum(z1pp(j,l).*W12(j,:), "all");
 %    end
 %end
 %grad = sum(grad, 2)';
@@ -61,7 +61,7 @@ W12  = W1.*W1;  % jk
 %for j=1:m
 %    for l=1:N
 %        % ij,jl,jk -> jl
-%        grad(j,l) = sum(W2(:,j).*z1p3(j,l).*W12(j,:));
+%        grad(j,l) = sum(W2(:,j).*z1p3(j,l).*W12(j,:), "all");
 %    end
 %end
 %grad = sum(grad, 2);
@@ -74,11 +74,14 @@ grad = zeros(D, m, N); % kjl
 for k=1:D
     for j=1:m
         for l=1:N
-            % ij,jl,jk->kjl
-            term1 = sum(2*W2(:,j).*z1pp(j,l).*W1(j,k), "all");
-            % ij,jl,jk,kl->kjl
-            term2 = sum(W2(:,j).*z1p3(j,l).*W12(j,:).*model.x(k,l), "all");
-            grad(k,j,l) = term1 + term2;
+            % jl,jk->kjl
+            term1 = sum(2*z1pp(j,l).*W1(j,k), "all");
+
+            % jl,jk,kl->kjl
+            term2 = sum(z1p3(j,l).*W12(j,:).*model.x(k,l), "all");
+
+            %ij,kjl->kjl
+            grad(k,j,l) = W2(:,j).*(term1 + term2);
         end
     end
 end

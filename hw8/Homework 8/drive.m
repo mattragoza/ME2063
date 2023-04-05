@@ -2,7 +2,7 @@ clc
 close all
 clear all
 
-%rng('default')
+rng('default')
 LW = 'LineWidth';
 set(0,'defaulttextinterpreter','latex')
 R     = [216, 82,  24 ]/255;
@@ -62,19 +62,19 @@ model.xstar_size= [N1 N2];
 model.ystar_t = T;
 
 %% ----------- Check gradients -----------
-x0 = randn(m, D);
-my_func(x0);
-options = optimoptions('fminunc','GradObj','on','Display','iter',...
-    'Algorithm','trust-region','Diagnostics','on','MaxIterations',2000,'FunctionTolerance',1e-8,'DerivativeCheck','on');
-fminunc(@my_func,x0,options);
-here
+%x0 = randn(m, D);
+%my_func(x0);
+%options = optimoptions('fminunc','GradObj','on','Display','iter',...
+%    'Algorithm','trust-region','Diagnostics','on','MaxIterations',2000,'FunctionTolerance',1e-8,'DerivativeCheck','on');
+%fminunc(@my_func,x0,options);
+%here
 
 %% ----------- Training Data: Model ------------ 
 model.xm = [L*rand(model.Nm,1) L*rand(model.Nm,1)]';
 
 w = randn(model.np,1);
-[l,g]=my_loss(w);
+[l,g]=loss(w);
 
 options = optimoptions('fminunc','GradObj','on','Display','iter',...
     'Algorithm','trust-region','Diagnostics','on','MaxIterations',2000,'FunctionTolerance',1e-8,'DerivativeCheck','off');
-model.w = fminunc(@my_loss,w,options);
+model.w = fminunc(@loss,w,options);

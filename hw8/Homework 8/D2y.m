@@ -28,3 +28,6 @@ for k=1:D
         end
     end
 end
+
+% convert Hessian to Laplacian
+s = reshape(s(1,1,:) + s(2,2,:), 1, N);
