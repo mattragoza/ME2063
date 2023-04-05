@@ -8,21 +8,21 @@ set(0,'defaulttextinterpreter','latex')
 R     = [216, 82,  24 ]/255;
 global model counter L 
 
-m = 40;
+m = 40; % num hidden units (default 40)
 D = 2;
-counter =0;
+counter = 0;
 model=initialize_NN(m,D);
 
 
 
-model.Nd  = 300;                    %number of tarining points (data)
-model.Ndb  = 290;                   %number of tarining points on the boundary(data) and it is a subset of total training data points. Therefore,  model.Ndb< model.Nd.
-model.Nm = 0;                       %number of tarining points (model)
+model.Nd  = 300;                    %number of training points (data)
+model.Ndb = 290;                    %number of training points on the boundary(data) and it is a subset of total training data points. Therefore,  model.Ndb< model.Nd.
+model.Nm = 300;                     %number of training points (model)
 noise = 2;                          %Noise level of the data measuremets 
-model.flagm = 0;                    %1:includes model in training; 0 excludes the model
+model.flagm = 1;                    %1:includes model in training; 0 excludes the model
 model.flagd  = 1;                   %1:includes data in training; 0 excludes the data
 model.k = 0.1;
-%% ------------- Turth ---------------
+%% ------------- Truth ---------------
 N1 = 101;
 N2 = 101;
 L = 1;
@@ -50,7 +50,7 @@ Q = -q([X1(:) X2(:)]);
 r = Q(:); r(BDRY.I)=0; 
 T = Lap\r/model.k; 
 T = reshape(T,N2,N1);
-surf(X1,X2,T); colormap(jet); hold on
+%surf(X1,X2,T); colormap(jet); hold on
 %% ----------- Training Data ------------
 IB = randperm(length(BDRY.I),model.Ndb)'; IB=BDRY.I(IB);
 I = [IB;randperm(N1*N2,model.Nd-model.Ndb)'];
@@ -60,6 +60,15 @@ model.y = T(I)'+noise*randn(1,model.Nd);
 model.xstar = X';
 model.xstar_size= [N1 N2];
 model.ystar_t = T;
+
+%% ----------- Check gradients -----------
+x0 = randn(D, 7);
+my_func(x0);
+options = optimoptions('fminunc','GradObj','on','Display','iter',...
+    'Algorithm','trust-region','Diagnostics','on','MaxIterations',2000,'FunctionTolerance',1e-8,'DerivativeCheck','on');
+fminunc(@my_func,x0,options);
+here
+
 %% ----------- Training Data: Model ------------ 
 model.xm = [L*rand(model.Nm,1) L*rand(model.Nm,1)]';
 
@@ -67,7 +76,7 @@ w = randn(model.np,1);
 [l,g]=loss(w);
 
 options = optimoptions('fminunc','GradObj','on','Display','iter',...
-    'Algorithm','trust-region','Diagnostics','on','MaxIterations',2000,'FunctionTolerance',1e-8); %,'DerivativeCheck','on'
+    'Algorithm','trust-region','Diagnostics','on','MaxIterations',2000,'FunctionTolerance',1e-8)%,'DerivativeCheck','on');
 model.w = fminunc(@loss,w,options);
 
 
