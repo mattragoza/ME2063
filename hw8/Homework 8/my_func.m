@@ -16,6 +16,8 @@ size(b1); % j1 (m, 1)
 size(W2); % ij (1, m)
 size(b2); % i1 (1, 1)
 
+% derivatives of y wrt x
+
 % first derivative
 %y = forward_pass(x);
 %loss = sum(y.^2, "all");
@@ -25,6 +27,13 @@ size(b2); % i1 (1, 1)
 %loss = sum(Dy(x), "all"); % kl
 %grad = sum(D2y(x), 1); % kml
 
+% derivatives of s wrt parameters
+
+a1   = W1*model.x+b1; % jk,kl-> jl
+z1pp = hpp(a1); % jl
+z1p3 = hp3(a1); % jl
+W12  = W1.*W1;  % jk
+
 % second layer bias
 %model.layer(2).b = x;
 %s = D2y(model.x); % kml
@@ -32,21 +41,27 @@ size(b2); % i1 (1, 1)
 %grad = zeros(1, 1);
 
 % second layer weights
+%model.layer(2).W = x;
+%s = D2y(model.x); % kml
+%loss = sum(s(1,1,:) + s(2,2,:), "all");
+%grad = zeros(m, N); % jl
+%for j=1:m
+%    for l=1:N
+%        % jl,jk,jk->jl
+%        grad(j,l) = sum(z1pp(j,l).*W12(j,:));
+%    end
+%end
+%grad = sum(grad, 2)';
 
-a1   = W1*model.x+b1; % jk,kl-> jl
-z1pp = hpp(a1); % jl
-z1p3 = hp3(a1); % jl
-W12  = W1.*W1;  % jk
-
-model.layer(2).W = x;
+% first layer bias
+model.layer(1).b = x;
 s = D2y(model.x); % kml
 loss = sum(s(1,1,:) + s(2,2,:), "all");
-
 grad = zeros(m, N); % jl
 for j=1:m
     for l=1:N
-        % jl,jk,jk->jl
-        grad(j,l) = sum(z1pp(j,l).*W12(j,:));
+        % ij,jl,jk -> jl
+        grad(j,l) = sum(W2(:,j).*z1p3(j,l).*W12(j,:));
     end
 end
-grad = sum(grad, 2)';
+grad = sum(grad, 2);
