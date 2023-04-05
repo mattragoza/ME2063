@@ -62,7 +62,7 @@ model.xstar_size= [N1 N2];
 model.ystar_t = T;
 
 %% ----------- Check gradients -----------
-x0 = randn(m, 1);
+x0 = randn(m, D);
 my_func(x0);
 options = optimoptions('fminunc','GradObj','on','Display','iter',...
     'Algorithm','trust-region','Diagnostics','on','MaxIterations',2000,'FunctionTolerance',1e-8,'DerivativeCheck','on');
