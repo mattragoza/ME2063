@@ -20,7 +20,7 @@ model.Ndb = 290;                    %number of training points on the boundary(d
 model.Nm = 300;                     %number of training points (model)
 noise = 2;                          %Noise level of the data measuremets 
 model.flagm = 1;                    %1:includes model in training; 0 excludes the model
-model.flagd  = 1;                   %1:includes data in training; 0 excludes the data
+model.flagd = 1;                    %1:includes data in training; 0 excludes the data
 model.k = 0.1;
 %% ------------- Truth ---------------
 N1 = 101;
@@ -61,20 +61,22 @@ model.xstar = X';
 model.xstar_size= [N1 N2];
 model.ystar_t = T;
 
-%% ----------- Check gradients -----------
-%x0 = randn(m, D);
-%my_func(x0);
-%options = optimoptions('fminunc','GradObj','on','Display','iter',...
-%    'Algorithm','trust-region','Diagnostics','on','MaxIterations',2000,'FunctionTolerance',1e-8,'DerivativeCheck','on');
-%fminunc(@my_func,x0,options);
-%here
-
 %% ----------- Training Data: Model ------------ 
 model.xm = [L*rand(model.Nm,1) L*rand(model.Nm,1)]';
 
 w = randn(model.np,1);
 [l,g]=loss(w);
 
-options = optimoptions('fminunc','GradObj','on','Display','iter',...
-    'Algorithm','trust-region','Diagnostics','on','MaxIterations',2000,'FunctionTolerance',1e-8,'DerivativeCheck','off');
+check_grad;
+
+options = optimoptions(...
+    'fminunc', ...
+    'GradObj', 'on', ...
+    'Display', 'iter', ...
+    'Algorithm', 'trust-region',...
+    'Diagnostics', 'on', ...
+    'MaxIterations', 2000, ...
+    'FunctionTolerance', 1e-8, ...
+    'DerivativeCheck', 'off' ...
+);
 model.w = fminunc(@loss,w,options);

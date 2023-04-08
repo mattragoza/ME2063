@@ -22,7 +22,8 @@ if model.flagd > 0
 end
 
 if model.flagm > 0
-    L = D2y(model.xm); % Laplacian
+    H = D2y(model.xm); % Hessian
+    L = squeeze(H(1,1,:) + H(2,2,:))'; % Laplacian
     pde_res = model.k * L + q(model.xm')';
     lossm = sum(pde_res.^2, "all")/(2*model.Nm);
     loss = loss + model.flagm * lossm;

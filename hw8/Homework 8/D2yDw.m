@@ -1,4 +1,4 @@
-function D2yDw=D2yDw(x)
+function G=D2yDw(x)
 global model
 
 W1 = model.layer(1).W;
@@ -8,63 +8,41 @@ b2 = model.layer(2).b;
 
 D = size(x, 1);
 N = size(x, 2);
-m = length(b1);
+M = length(b1);
 
-size(x);  % kl
-size(W1); % jk
-size(b1); % j1
-
-size(W2); % ij
-size(b2); % i1
-
-a1   = W1*x+b1; % jk,kl-> jl
+a1   = W1*x+b1; % jk,kl -> jl
 z1pp = hpp(a1); % jl
 z1p3 = hp3(a1); % jl
-W12  = W1.*W1;  % jk
+W1_2 = W1 .^ 2; % jn
 
 % second layer bias
 G_b2 = zeros(1, N); % il
 
 % second layer weights
-G_W2 = zeros(m, N); % jl
-for j=1:m
-    for l=1:N
-        % jl,jk -> jl
-        G_W2(j,l) = sum(z1pp(j,l).*W12(j,:), "all");
-    end
+G_W2 = zeros(M, N); % jl
+for n=1:D
+    % jn,jl->jl
+    G_W2 = G_W2 + W1_2(:,n).*z1pp;
 end
 
 % first layer bias
-G_b1 = zeros(m, N); % jl
-for j=1:m
-    for l=1:N
-        % ij,jl,jk -> jl
-        G_b1(j,l) = sum(W2(:,j).*z1p3(j,l).*W12(j,:), "all");
-    end
+G_b1 = zeros(M, N); % jl
+for n=1:D
+    % ji,jn,jl->jl
+    G_b1 = G_b1 + W2'.*W1_2(:,n).*z1p3;
 end
 
 % first layer weights
-G_W1 = []; % kjl
+G_W1 = zeros(M, D, N); % jkl
 for k=1:D
-    G_W1_k = zeros(m, N); % jl
-    for j=1:m
-        for l=1:N
-            % jl,jk->kjl
-            term1 = sum(2*z1pp(j,l).*W1(j,k), "all");
+    term1 = 2*W2'.*W1(:,k).*z1pp; % ji,jk,jl->jkl
 
-            % jl,jk,kl->kjl
-            term2 = sum(z1p3(j,l).*W12(j,:).*model.x(k,l), "all");
-            
-            % ij,kjl->kjl
-            G_W1_k(j,l) = W2(:,j).*(term1 + term2);
-        end
+    term2 = 0;
+    for n=1:D % ji,jn,jl,kl->jkl
+        term2 = term2 + W2'.*W1_2(:,n).*z1p3.*x(k,:);
     end
-    G_W1 = [G_W1; G_W1_k]; % stack vertically
+    G_W1(:,k,:) = term1 + term2;
 end
+G_W1 = reshape(G_W1, M*D, N);
 
-size(G_W1); % 80 x 300
-size(G_b1); % 40 x 300
-size(G_W2); % 40 x 300
-size(G_b2); %  1 x 300
-
-D2yDw = [G_W1;G_b1;G_W2;G_b2];
+G = [G_W1;G_b1;G_W2;G_b2];

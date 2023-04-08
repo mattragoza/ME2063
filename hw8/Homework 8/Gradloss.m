@@ -16,7 +16,8 @@ end
 %% ----------------- Adding Physics-informed gradient ---------------
 
 if model.flagm > 0
-    L = D2y(model.xm); % Laplacian
+    H = D2y(model.xm); % Hessian
+    L = squeeze(H(1,1,:) + H(2,2,:))'; % Laplacian
     pde_res = model.k * L + q(model.xm')';
     GL = D2yDw(model.xm);
     Gm = model.k*GL*pde_res'/model.Nm;
