@@ -2,14 +2,14 @@ clc
 close all
 clear all
 
-rng('default')
+%rng('default')
 LW = 'LineWidth';
 set(0,'defaulttextinterpreter','latex')
 R     = [216, 82,  24 ]/255;
 global model counter L 
 
 set(gcf, 'Position', [100, 100, 1200, 300]);
-colororder([[0.3,0.3,1]; [0,0.7,0]]);
+colororder([[0.3,0.3,1]; [0,0.7,0]; [1,0.2,0]]);
 
 m = 40; % num hidden units (default 40)
 D = 2;
@@ -74,6 +74,7 @@ model.ytest = T(I_test)';
 model.iteration   = [];
 model.train_error = [];
 model.test_error  = [];
+model.k_error     = [];
 
 %% ----------- Training Data: Model ------------ 
 model.xm = [L*rand(model.Nm,1) L*rand(model.Nm,1)]';

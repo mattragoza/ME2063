@@ -13,6 +13,7 @@ for i=1:length(model.layers)-1
     
     model.layer(i).b = reshape(w(m(1):m(2)),n(1),n(2));
 end
+model.kp = w(model.np); % thermal conductivity
 
 loss = 0;
 if model.flagd > 0
@@ -24,7 +25,7 @@ end
 if model.flagm > 0
     H = D2y(model.xm); % Hessian
     L = squeeze(H(1,1,:) + H(2,2,:))'; % Laplacian
-    pde_res = model.k * L + q(model.xm')';
+    pde_res = model.kp * L + q(model.xm')';
     lossm = sum(pde_res.^2, "all")/(2*model.Nm);
     loss = loss + model.flagm * lossm;
 end
@@ -82,24 +83,27 @@ if (mod(counter,100)==0)
 
     yp_test = forward_pass(model.xtest);
     test_error = sum((yp_test - model.ytest).^2)/(2*model.Ntest);
+    kp = model.kp
 
     model.iteration   = [model.iteration; counter];
     model.train_error = [model.train_error; train_error];
     model.test_error  = [model.test_error; test_error];
+    model.k_error     = [model.k_error; kp];
     
     subplot(1,3,3);
     semilogy(model.iteration, model.train_error);
     hold on
     semilogy(model.iteration, model.test_error);
+    semilogy(model.iteration,  model.k_error);
     hold off
     title('Train and test error');
     xlabel('iteration');
-    ylabel('MSE');
-    legend('train', 'test');
+    ylabel('value');
+    legend('MSE_{train}', 'MSE_{test}', 'k');
     ylim([1e-2, 1e3]);
     grid(gca, 'on');
     set(gca, 'YMinorGrid', 'off');
     set(gca, 'FontSize', 12);
-
+    
     drawnow
 end

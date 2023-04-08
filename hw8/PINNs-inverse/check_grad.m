@@ -45,9 +45,13 @@ hpp = @(x) -2*tanh(x).*hp(x);
 %loss = @(W1) sum(LW1(W1), "all");
 %grad = @(W1) DLW1(W1);
 
-x0 = randn(1+M+M+D*M, 1);
-loss = @(W) sum(LW(W), "all");
-grad = @(W) DLW(W);
+%x0 = randn(1+M+M+D*M, 1);
+%loss = @(W) sum(LW(W), "all");
+%grad = @(W) DLW(W);
+
+x0 = randn(1,1).^2;
+loss = @loss_k;
+grad = @grad_k;
 
 % NUMERICAL GRADIENT CHECK
 relative_error = zeros(size(x0));

@@ -1,10 +1,11 @@
-function model=initialize_NN(m,D)
-model.W1 = randn(m,D);
-model.b1 = randn(m,1);
-model.W2 = randn(1,m);
+function model=initialize_NN(M,D)
+model.W1 = randn(M,D);
+model.b1 = randn(M,1);
+model.W2 = randn(1,M);
 model.b2 = randn(1,1);
+model.kp = randn(1,1);
 
-model.layers = [D m 1];
+model.layers = [D M 1];
 
 n = 1;
 for i=1:length(model.layers)-1
@@ -18,5 +19,5 @@ for i=1:length(model.layers)-1
     model.layer(i).ws = [m2 m1];
     model.layer(i).bs = [m2 1]; 
 end
-model.np = n-1;
+model.np = n;
 model.D = D;
