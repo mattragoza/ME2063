@@ -33,28 +33,33 @@ G = Gradloss;
 
 counter = counter + 1;
 if (mod(counter,100)==0)
+    
     N = model.xstar_size;
     ystar = forward_pass(model.xstar);
     ystar = reshape(ystar,N(2),N(1));
     X1 = reshape(model.xstar(1,:),N(2),N(1));
     X2 = reshape(model.xstar(2,:),N(2),N(1));
     %  surf(X1,X2,model.ystar_t,'FaceColor',[.5 .5 .5]);hold on
-    %  plot3(model.x(1,:),model.x(2,:),model.y,'o','MarkerSize',15);
+    %  plot3(model.x(1,:),model.x(2,:),model.y,'o','MarkerSize',5);
     %  surf(X1,X2,ystar);hold off
-    subplot(1,2,1)
+    subplot(1,3,1)
     contourf(X1,X2,model.ystar_t);hold on
-    plot(model.x(1,:),model.x(2,:),'o','MarkerSize',15);
+    colormap('hot');
+    plot(model.x(1,:),model.x(2,:),'+','MarkerSize',5);
+    plot(model.xtest(1,:),model.xtest(2,:),'+','MarkerSize',5);
     colorbar
     axis equal
     xlabel('$x_1$')
     ylabel('$x_2$')
     title('Truth: Finite-Difference')
-    set(gca,'FontSize',20)
+    set(gca,'FontSize',12)
     hold off
     % ---------------------------------------------------------------------
-    subplot(1,2,2)
+    subplot(1,3,2)
     contourf(X1,X2,ystar);hold on
-    plot(model.x(1,:),model.x(2,:),'o','MarkerSize',15);
+    colormap('hot');
+    plot(model.x(1,:),model.x(2,:),'+','MarkerSize',5);
+    plot(model.xtest(1,:),model.xtest(2,:),'+','MarkerSize',5);
     axis equal
     colorbar
     if (model.flagm && model.flagd)
@@ -69,6 +74,32 @@ if (mod(counter,100)==0)
     hold off
     xlabel('$x_1$')
     ylabel('$x_2$')
-    set(gca,'FontSize',20)
+    set(gca,'FontSize',12)
+    % -------------------------------------------------
+
+    yp_train = forward_pass(model.x);
+    train_error = sum((yp_train - model.y).^2)/(2*model.Nd);
+
+    yp_test = forward_pass(model.xtest);
+    test_error = sum((yp_test - model.ytest).^2)/(2*model.Ntest);
+
+    model.iteration   = [model.iteration; counter];
+    model.train_error = [model.train_error; train_error];
+    model.test_error  = [model.test_error; test_error];
+    
+    subplot(1,3,3);
+    semilogy(model.iteration, model.train_error);
+    hold on
+    semilogy(model.iteration, model.test_error);
+    hold off
+    title('Train and test error');
+    xlabel('iteration');
+    ylabel('MSE');
+    legend('train', 'test');
+    ylim([1e-2, 1e3]);
+    grid(gca, 'on');
+    set(gca, 'YMinorGrid', 'off');
+    set(gca, 'FontSize', 12);
+
     drawnow
 end
