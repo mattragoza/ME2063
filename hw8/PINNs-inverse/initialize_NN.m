@@ -3,7 +3,7 @@ model.W1 = randn(M,D);
 model.b1 = randn(M,1);
 model.W2 = randn(1,M);
 model.b2 = randn(1,1);
-model.kp = randn(1,1);
+model.kp = randn(1,1).^2;
 
 model.layers = [D M 1];
 
