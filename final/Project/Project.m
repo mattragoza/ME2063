@@ -45,14 +45,57 @@ for n=1:Ns
     yc(n) = 0.5*sind(theta(n))-0.25;
     [model,FEM_M,FEM_K,FEM_F] = GetFEMMatmodel(xc(n),yc(n),model);
     [t , Tn] = SolveFOM(u0,t,xc(n),yc(n));
-    figure; pdeplot(model ,'XYData',Tn(:,end),'ZData',Tn(:,end),'Contour','on','ColorMap','jet'); view([0 0 1]); axis equal;axis tight;xlabel('$x$')
-    ylabel('$y$'); set(gca,'Fontsize',15); drawnow
+    figure;
+    pdeplot(model, ...
+        'XYData', Tn(:,end), ...
+        'ZData',  Tn(:,end), ...
+        'Contour', 'on', ...
+        'ColorMap', 'hot' ...
+    );
+    title('Temperature simulation');
+    view([0 0 1]); axis equal; axis tight;
+    xlabel('$x$'); ylabel('$y$'); set(gca,'Fontsize',15);
+    drawnow
     T(:,:,n) = Tn;
 end
 %% Part 1: POD modes
+Nnode % 4274
+Ntime %  201
+Ns    %    7
+T = reshape(T, Nnode, Ntime*Ns);
+[U, S, V_T] = svd(T, 0);
 
+% plot first 4 POD modes
+for r=1:4
+    mode = U(:,r);
+    figure;
+    pdeplot(...
+        model, ...
+        'XYData', mode, ...
+        'ZData',  mode, ...
+        'Contour',  'on', ...
+        'ColorMap', 'hot' ...
+    );
+    title('POD modes');
+    view([0 0 1]); axis tight; axis equal;
+    xlabel('$x$'); ylabel('$y$'); set(gca, 'Fontsize', 15);
+    drawnow
+end
 
+% plot singular values
+figure;
+semilogy(diag(S));
+title('Singular values');
+ylabel('value');
+xlabel('index');
 
+% low-rank POD basis
+p = cumsum(diag(S).^2);
+p = p / p(length(p)) * 100;
+[m, r] = max(p > 99.9);
+U_r = U(:,1:r);
+rank = r
+power = p(r)
 
 
 
