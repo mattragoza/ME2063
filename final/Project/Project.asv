@@ -133,49 +133,16 @@ end
 
 % interpolate temperature with QDEIM
 T = reshape(T, [Nnode, Ntime, Ns]);
-T_true = T(:, Ntime, Ns);
+T_true = T(:, end, end);
 T_data = T_true(p);
 U_data = U_r(p, :);
-theta = U_data \ T_data;
-T_pred = U_r * theta;
-
-figure;
-subplot(3,1,1);
-pdeplot(...
-    model, ...
-    'XYData', T_pred, ...
-    'ZData',  T_pred, ...
-    'Contour',  'on', ...
-    'ColorMap', 'hot' ...
-);
-view([0 0 1]); axis tight;
-title('Interpolated temperature');
-
-subplot(3,1,2);
-pdeplot(...
-    model, ...
-    'XYData', T_true - T_pred, ...
-    'ZData',  T_true - T_pred, ...
-    'Contour',  'on', ...
-    'ColorMap', 'hot' ...
-);
-view([0 0 1]); axis tight;
-title('Error');
-
-subplot(3,1,3);
-pdeplot(...
-    model, ...
-    'XYData', T_true, ...
-    'ZData',  T_true, ...
-    'Contour',  'on', ...
-    'ColorMap', 'hot' ...
-);
-view([0 0 1]); axis tight;
-title('True temperature');
+params = U_data \ T_data;
+T_pred = U_r * params;
+panelplot(model, T_true, T_pred, "train", "QDEIM");
 
 %% Part 3: Surrogate Modeling Using DEIM
 
-% generate new temperature simulation
+% generate new temperature simulation as tes
 theta_new = 120;
 xc_new = 0.5*cosd(theta_new) + 0.5;
 yc_new = 0.5*sind(theta_new) - 0.25;
@@ -193,15 +160,35 @@ view([0 0 1]); axis equal; axis tight;
 xlabel('$x$'); ylabel('$y$'); set(gca,'Fontsize',15);
 drawnow
 
-% interpolate new temperature using QDEIM
-T_true = T_new();
-T_data = T_true(p);
-U_data = U_r(p, :);
-theta = U_data \ T_data;
-T_pred = U_r * theta;
-
-
-
+% test QDEIM model
+for t_idx=41:80:201
+    T_true = T_new(:, t_idx);
+    T_data = T_true(p);
+    U_data = U_r(p, :);
+    params = U_data \ T_data;
+    T_pred = U_r * params;
+    panelplot(model, T_true, T_pred, "test", "QDEIM");
+end
 
 %% Part 4: Surrogate Modeling Using Polynomial Basis Function
+
+% train polynomial model
 Phi = phi(theta, Ns);
+T_true = squeeze(T(:,Ntime,:));
+
+%size(Phi)    % Ntheta x Ns
+%size(T_true) %  Nnode x Ns
+
+% T_true = T_hat * Phi';
+% T_true' = Phi * T_hat';
+% T_hat' = Phi \ T_true';
+T_hat = (Phi \ T_true')';
+
+%size(T_hat);  % Nnode x Ntheta
+
+% test polynomial model
+Phi_pred = phi(120, Ns);
+T_pred = T_hat * Phi_pred';
+T_true = T_new(:, Ntime);
+panelplot(model, T_true, T_pred, "test", "polynomial");
+
