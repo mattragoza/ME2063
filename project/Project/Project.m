@@ -67,9 +67,10 @@ T = reshape(T, Nnode, Ntime*Ns);
 [U, S, V_T] = svd(T, 0);
 
 % plot first 4 POD modes
-for r=1:4
-    mode = U(:,r);
-    figure;
+figure;
+for i=1:4
+    mode = U(:,i);
+    subplot(2,2,i);
     pdeplot(...
         model, ...
         'XYData', mode, ...
@@ -77,18 +78,20 @@ for r=1:4
         'Contour',  'on', ...
         'ColorMap', 'hot' ...
     );
-    title('POD modes');
+    title(sprintf("POD mode %d", i));
     view([0 0 1]); axis tight; axis equal;
     xlabel('$x$'); ylabel('$y$'); set(gca, 'Fontsize', 15);
+    axis tight;
     drawnow
 end
 
 % plot singular values
 figure;
-semilogy(diag(S));
+semilogy(diag(S(1:50,1:50)));
 title('Singular values');
 ylabel('value');
 xlabel('index');
+axis tight;
 
 % low-rank POD basis
 p = cumsum(diag(S).^2);
@@ -106,9 +109,10 @@ P_r = P(1:r,:);
 [m, p] = max(P_r');
 
 c = '#00AAEE';
+figure;
 for i=1:4
     mode = U(:,i);
-    figure;
+    subplot(2,2,i);
     pdeplot(...
         model, ...
         'XYData', mode, ...
@@ -125,7 +129,7 @@ for i=1:4
         'Color', c, ...
         'MarkerFaceColor', c ...
     );
-    title('QDEIM sensor locations');
+    title(sprintf("POD mode %d", i));
     view([0 0 1]); axis tight; axis equal;
     xlabel('$x$'); ylabel('$y$'); set(gca, 'Fontsize', 15);
     drawnow
@@ -167,7 +171,7 @@ for t_idx=41:80:201
     U_data = U_r(p, :);
     params = U_data \ T_data;
     T_pred = U_r * params;
-    panelplot(model, T_true, T_pred, "test", "QDEIM");
+    panelplot(model, T_true, T_pred, sprintf("test, t=%.2f", t(t_idx)), "QDEIM");
 end
 
 %% Part 4: Surrogate Modeling Using Polynomial Basis Function
@@ -185,6 +189,25 @@ T_true = squeeze(T(:,Ntime,:));
 T_hat = (Phi \ T_true')';
 
 %size(T_hat);  % Nnode x Ntheta
+
+% plot polynomial coefficients
+figure;
+for i=1:4
+    mode = T_hat(:,i);
+    subplot(2,2,i);
+    pdeplot(...
+        model, ...
+        'XYData', mode, ...
+        'ZData',  mode, ...
+        'Contour',  'on', ...
+        'ColorMap', 'hot' ...
+    );
+    title(sprintf("Polynomial coefficients %d", i));
+    view([0 0 1]); axis tight; axis equal;
+    xlabel('$x$'); ylabel('$y$'); set(gca, 'Fontsize', 15);
+    axis tight;
+    drawnow
+end
 
 % test polynomial model
 Phi_pred = phi(120, Ns);
